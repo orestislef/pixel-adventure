@@ -57,28 +57,28 @@ class WalkingEnemy extends PositionComponent with HasGameReference<PixelAdventur
     if (isDead) return;
     
     final bounce = sin(_animationTime * 8) * 2;
-    
+
     final bodyPaint = Paint()..color = const Color(0xFF8B0000);
     canvas.drawOval(
-      Rect.fromLTWH(0, -size.y + 4 + bounce, size.x, size.y * 0.75),
+      Rect.fromLTWH(0, 4 + bounce, size.x, size.y * 0.75),
       bodyPaint,
     );
-    
+
     final eyePaint = Paint()..color = const Color(0xFFFFFFFF);
-    canvas.drawCircle(Offset(8, -size.y + 14 + bounce), 4, eyePaint);
-    canvas.drawCircle(Offset(20, -size.y + 14 + bounce), 4, eyePaint);
-    
+    canvas.drawCircle(Offset(8, 14 + bounce), 4, eyePaint);
+    canvas.drawCircle(Offset(20, 14 + bounce), 4, eyePaint);
+
     final pupilPaint = Paint()..color = const Color(0xFF000000);
-    canvas.drawCircle(Offset(8 + _moveDirection * 2, -size.y + 14 + bounce), 2, pupilPaint);
-    canvas.drawCircle(Offset(20 + _moveDirection * 2, -size.y + 14 + bounce), 2, pupilPaint);
-    
+    canvas.drawCircle(Offset(8 + _moveDirection * 2, 14 + bounce), 2, pupilPaint);
+    canvas.drawCircle(Offset(20 + _moveDirection * 2, 14 + bounce), 2, pupilPaint);
+
     final footPaint = Paint()..color = const Color(0xFF5C0000);
     canvas.drawOval(
-      Rect.fromLTWH(2, -6 + bounce, size.x / 3, 8),
+      Rect.fromLTWH(2, 22 + bounce, size.x / 3, 8),
       footPaint,
     );
     canvas.drawOval(
-      Rect.fromLTWH(size.x / 2, -6 + bounce, size.x / 3, 8),
+      Rect.fromLTWH(size.x / 2, 22 + bounce, size.x / 3, 8),
       footPaint,
     );
   }

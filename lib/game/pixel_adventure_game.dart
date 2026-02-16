@@ -1,4 +1,6 @@
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
+import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
@@ -9,7 +11,7 @@ import 'enemies/walking_enemy.dart';
 import 'items/coin.dart';
 import 'items/flag.dart';
 
-class PixelAdventureGame extends FlameGame with HasCollisionDetection {
+class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
   late Player player;
   
   late double levelWidth;
@@ -30,7 +32,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
     
     _calculateDimensions();
     
-    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewfinder.anchor = Anchor.center;
     
     debugPrint('=== GAME LOADED ===');
     debugPrint('Screen size: $size');
@@ -56,12 +58,12 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
       size: Vector2(levelWidth, levelHeight),
       paint: Paint()..color = const Color(0xFF87CEEB),
     );
-    add(bg);
-    
+    world.add(bg);
+
     for (int layer = 0; layer < 3; layer++) {
       final mountainCount = (levelWidth / (400 - layer * 100)).floor() + 2;
       for (int i = 0; i < mountainCount; i++) {
-        add(Mountain(
+        world.add(Mountain(
           position: Vector2(i * (400.0 - layer * 100), levelHeight - tileSize),
           height: tileSize * (3 + layer * 1.5),
           width: tileSize * (8 + layer * 2),
@@ -69,17 +71,17 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
         ));
       }
     }
-    
+
     final cloudCount = (levelWidth / 200).floor();
     for (int i = 0; i < cloudCount; i++) {
       final cloud = Cloud(
         position: Vector2(i * 200.0 + (i % 3) * 50, tileSize * 0.3 + (i % 4) * tileSize * 0.4),
       );
-      add(cloud);
+      world.add(cloud);
     }
-    
+
     for (int i = 0; i < (levelWidth / 150).floor(); i++) {
-      add(Bush(
+      world.add(Bush(
         position: Vector2(i * 150.0 + 50, levelHeight - tileSize),
         size: tileSize * (0.6 + (i % 3) * 0.2),
       ));
@@ -96,10 +98,10 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
       position: Vector2(0, groundY),
       size: Vector2(levelWidth, tileSize),
     );
-    add(ground);
-    
+    world.add(ground);
+
     player = Player(position: Vector2(tileSize * 3, groundY));
-    add(player);
+    world.add(player);
     
     final levelLayout = [
       {'x': 5, 'type': 'gap', 'width': 4},
@@ -137,30 +139,30 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
         case 'platform':
           final height = (item['height'] as num) * tileSize;
           final platY = groundY - height;
-          add(Platform(position: Vector2(x, platY), size: Vector2(tileSize * 4, tileSize * 0.75)));
-          add(Coin(position: Vector2(x + tileSize * 2, platY - tileSize * 0.5)));
+          world.add(Platform(position: Vector2(x, platY), size: Vector2(tileSize * 4, tileSize * 0.75)));
+          world.add(Coin(position: Vector2(x + tileSize * 2, platY - tileSize * 0.5)));
           break;
-          
+
         case 'enemy':
-          add(WalkingEnemy(position: Vector2(x, groundY)));
+          world.add(WalkingEnemy(position: Vector2(x, groundY)));
           break;
-          
+
         case 'gap':
           final width = (item['width'] as num) * tileSize;
           gapEndX = x + width;
           break;
-          
+
         case 'coin_row':
           final count = item['count'] as int;
           for (int i = 0; i < count; i++) {
-            add(Coin(position: Vector2(x + i * tileSize * 1.2, groundY - tileSize * 2)));
+            world.add(Coin(position: Vector2(x + i * tileSize * 1.2, groundY - tileSize * 2)));
           }
           break;
-          
+
         case 'stair':
           final steps = item['steps'] as int;
           for (int i = 0; i < steps; i++) {
-            add(Platform(
+            world.add(Platform(
               position: Vector2(x + i * tileSize * 1.5, groundY - (i + 1) * tileSize * 0.8),
               size: Vector2(tileSize * 2, tileSize * 0.8),
             ));
@@ -169,9 +171,14 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection {
       }
     }
     
-    add(Flag(position: Vector2(levelWidth - tileSize * 4, groundY)));
-    
-    camera.follow(player, horizontalOnly: true);
+    world.add(Flag(position: Vector2(levelWidth - tileSize * 4, groundY)));
+
+    camera.follow(player, horizontalOnly: true, snap: true);
+    camera.viewfinder.position.y = levelHeight / 2;
+    camera.setBounds(
+      Rectangle.fromLTWH(0, 0, levelWidth, levelHeight),
+      considerViewport: true,
+    );
     
     debugPrint('Player created at: ${player.position}');
     debugPrint('Player size: ${player.size}');
@@ -248,17 +255,17 @@ class Mountain extends PositionComponent {
   void render(Canvas canvas) {
     final paint = Paint()..color = color;
     final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.x / 2, -size.y)
-      ..lineTo(size.x, 0)
+      ..moveTo(0, size.y)
+      ..lineTo(size.x / 2, 0)
+      ..lineTo(size.x, size.y)
       ..close();
     canvas.drawPath(path, paint);
-    
+
     final snowPaint = Paint()..color = Colors.white;
     final snowPath = Path()
-      ..moveTo(size.x * 0.35, -size.y * 0.6)
-      ..lineTo(size.x / 2, -size.y)
-      ..lineTo(size.x * 0.65, -size.y * 0.6)
+      ..moveTo(size.x * 0.35, size.y * 0.4)
+      ..lineTo(size.x / 2, 0)
+      ..lineTo(size.x * 0.65, size.y * 0.4)
       ..close();
     canvas.drawPath(snowPath, snowPaint);
   }
@@ -289,8 +296,8 @@ class Bush extends PositionComponent {
   @override
   void render(Canvas canvas) {
     final paint = Paint()..color = const Color(0xFF388E3C);
-    canvas.drawOval(Rect.fromLTWH(0, -size.y * 0.7, size.x * 0.6, size.y * 0.7), paint);
-    canvas.drawOval(Rect.fromLTWH(size.x * 0.3, -size.y, size.x * 0.5, size.y), paint);
-    canvas.drawOval(Rect.fromLTWH(size.x * 0.5, -size.y * 0.6, size.x * 0.5, size.y * 0.7), paint);
+    canvas.drawOval(Rect.fromLTWH(0, size.y * 0.3, size.x * 0.6, size.y * 0.7), paint);
+    canvas.drawOval(Rect.fromLTWH(size.x * 0.3, 0, size.x * 0.5, size.y), paint);
+    canvas.drawOval(Rect.fromLTWH(size.x * 0.5, size.y * 0.4, size.x * 0.5, size.y * 0.7), paint);
   }
 }

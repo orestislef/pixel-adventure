@@ -44,23 +44,23 @@ class Coin extends PositionComponent {
     
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(size.x / 2, -size.y / 2),
+        center: Offset(size.x / 2, size.y / 2),
         width: 14 * scale,
         height: 14,
       ),
       shadowPaint,
     );
-    
+
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(size.x / 2, -size.y / 2 - 1),
+        center: Offset(size.x / 2, size.y / 2 - 1),
         width: 12 * scale,
         height: 12,
       ),
       paint,
     );
-    
+
     final shinePaint = Paint()..color = const Color(0xFFFFFF00);
-    canvas.drawCircle(Offset(size.x / 2 - 2, -size.y / 2 - 3), 2, shinePaint);
+    canvas.drawCircle(Offset(size.x / 2 - 2, size.y / 2 - 3), 2, shinePaint);
   }
 }

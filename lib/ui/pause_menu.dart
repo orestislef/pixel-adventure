@@ -112,7 +112,7 @@ class PauseMenu extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.stars, color: Colors.amber, size: isSmall ? 16 : 18),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 'Score: ${game.score}',
                 style: TextStyle(
@@ -127,7 +127,7 @@ class PauseMenu extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.monetization_on, color: Colors.yellow, size: isSmall ? 16 : 18),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 'Coins: ${game.coins}',
                 style: TextStyle(

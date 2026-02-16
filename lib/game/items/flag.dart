@@ -29,31 +29,31 @@ class Flag extends PositionComponent {
     
     final polePaint = Paint()..color = const Color(0xFF424242);
     canvas.drawRect(
-      Rect.fromLTWH(5, -size.y, 6, size.y),
+      Rect.fromLTWH(5, 0, 6, size.y),
       polePaint,
     );
-    
+
     final ballPaint = Paint()..color = const Color(0xFFFFD700);
-    canvas.drawCircle(Offset(8, -size.y), 8, ballPaint);
-    
+    canvas.drawCircle(const Offset(8, 0), 8, ballPaint);
+
     final wave = sin(_waveTime * 3) * 3;
     final flagPaint = Paint()..color = const Color(0xFFFF5252);
-    
+
     final path = Path()
-      ..moveTo(11, -size.y + 8)
-      ..lineTo(40 + wave, -size.y + 16 + wave / 2)
-      ..lineTo(40 + wave * 0.5, -size.y + 40)
-      ..lineTo(11, -size.y + 48)
+      ..moveTo(11, 8)
+      ..lineTo(40 + wave, 16 + wave / 2)
+      ..lineTo(40 + wave * 0.5, 40)
+      ..lineTo(11, 48)
       ..close();
-    
+
     canvas.drawPath(path, flagPaint);
-    
+
     final starPaint = Paint()..color = const Color(0xFFFFFFFF);
-    canvas.drawCircle(Offset(26 + wave * 0.7, -size.y + 28), 5, starPaint);
-    
+    canvas.drawCircle(Offset(26 + wave * 0.7, 28), 5, starPaint);
+
     final basePaint = Paint()..color = const Color(0xFF795548);
     canvas.drawRect(
-      const Rect.fromLTWH(0, -8, 16, 8),
+      Rect.fromLTWH(0, size.y - 8, 16, 8),
       basePaint,
     );
   }

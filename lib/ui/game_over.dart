@@ -94,7 +94,7 @@ class GameOverScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.monetization_on, color: Colors.yellow, size: isSmall ? 16 : 20),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 'Coins: ${game.coins}',
                 style: TextStyle(

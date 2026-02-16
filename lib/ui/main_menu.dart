@@ -102,7 +102,7 @@ class MainMenu extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.play_arrow, size: isSmall ? 24 : 28),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             'PLAY',
             style: TextStyle(
@@ -156,7 +156,7 @@ class MainMenu extends StatelessWidget {
         if (icon2 != null) ...[
           Icon(icon2, color: Colors.white, size: isSmall ? 14 : 18),
         ],
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         Text(text, style: TextStyle(color: Colors.white70, fontSize: isSmall ? 11 : 13)),
       ],
     );

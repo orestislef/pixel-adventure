@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../utils/constants.dart';
 import '../pixel_adventure_game.dart';
 import '../platforms/ground.dart';
@@ -9,7 +10,7 @@ import '../enemies/walking_enemy.dart';
 import '../items/coin.dart';
 import '../items/flag.dart';
 
-class Player extends PositionComponent with CollisionCallbacks, HasGameReference<PixelAdventureGame> {
+class Player extends PositionComponent with CollisionCallbacks, HasGameReference<PixelAdventureGame>, KeyboardHandler {
   Player({required Vector2 position}) : super(
     position: position,
     size: Vector2(24, 32),
@@ -49,15 +50,18 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     _groundContactCount = 0;
   }
   
-  void reset(Vector2 newPosition) {
-    position = newPosition;
-    velocity = Vector2.zero();
-    isDead = false;
-    isOnGround = false;
-    _isJumping = false;
-    _groundContactCount = 0;
+  @override
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    moveLeft = keysPressed.contains(LogicalKeyboardKey.arrowLeft) ||
+        keysPressed.contains(LogicalKeyboardKey.keyA);
+    moveRight = keysPressed.contains(LogicalKeyboardKey.arrowRight) ||
+        keysPressed.contains(LogicalKeyboardKey.keyD);
+    jumpPressed = keysPressed.contains(LogicalKeyboardKey.space) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
+        keysPressed.contains(LogicalKeyboardKey.keyW);
+    return true;
   }
-  
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -92,7 +96,6 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
         _isJumping = false;
       }
     }
-    jumpPressed = false;
   }
   
   void _applyGravity(double dt) {
@@ -116,49 +119,59 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
   }
   
   @override
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (isDead) return;
+
+    if (other is Ground || other is Platform) {
+      _groundContactCount++;
+    }
+  }
+
+  @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
-    
+
     if (isDead) return;
-    
+
     if (other is Ground || other is Platform) {
       _handleGroundCollision(other);
     }
-    
+
     if (other is WalkingEnemy && !other.isDead) {
       _handleEnemyCollision(other);
     }
-    
+
     if (other is Coin && !other.isCollected) {
       other.collect();
       game.collectCoin();
     }
-    
+
     if (other is Flag) {
       game.completeLevel();
     }
   }
-  
+
   void _handleGroundCollision(PositionComponent other) {
     final otherTop = other.position.y;
-    
+
     if (velocity.y >= 0) {
       final wasAbove = bottomY <= otherTop + velocity.y.abs() * 0.1 + 5;
-      
+
       if (wasAbove && bottomY >= otherTop - 10) {
         position.y = otherTop;
         velocity.y = 0;
         isOnGround = true;
         _isJumping = false;
-        _groundContactCount++;
       }
     }
   }
-  
+
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
-    
+
     if (other is Ground || other is Platform) {
       _groundContactCount--;
       if (_groundContactCount <= 0) {
@@ -209,21 +222,21 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     }
     
     final bodyPaint = Paint()..color = const Color(0xFF2196F3);
-    canvas.drawRect(Rect.fromLTWH(3, -size.y, 18, 20), bodyPaint);
-    
+    canvas.drawRect(Rect.fromLTWH(3, 0, 18, 20), bodyPaint);
+
     final headPaint = Paint()..color = const Color(0xFFFFCC80);
-    canvas.drawRect(Rect.fromLTWH(5, -size.y, 14, 12), headPaint);
-    
+    canvas.drawRect(Rect.fromLTWH(5, 0, 14, 12), headPaint);
+
     final hatPaint = Paint()..color = const Color(0xFFFF5722);
-    canvas.drawRect(Rect.fromLTWH(4, -size.y, 16, 5), hatPaint);
-    
+    canvas.drawRect(Rect.fromLTWH(4, 0, 16, 5), hatPaint);
+
     final eyePaint = Paint()..color = const Color(0xFF000000);
-    canvas.drawRect(const Rect.fromLTWH(7, -26, 2, 2), eyePaint);
-    canvas.drawRect(const Rect.fromLTWH(12, -26, 2, 2), eyePaint);
-    
+    canvas.drawRect(const Rect.fromLTWH(7, 6, 2, 2), eyePaint);
+    canvas.drawRect(const Rect.fromLTWH(12, 6, 2, 2), eyePaint);
+
     final legPaint = Paint()..color = const Color(0xFF1565C0);
-    canvas.drawRect(const Rect.fromLTWH(4, -12, 6, 12), legPaint);
-    canvas.drawRect(const Rect.fromLTWH(14, -12, 6, 12), legPaint);
+    canvas.drawRect(const Rect.fromLTWH(4, 20, 6, 12), legPaint);
+    canvas.drawRect(const Rect.fromLTWH(14, 20, 6, 12), legPaint);
     
     canvas.restore();
   }

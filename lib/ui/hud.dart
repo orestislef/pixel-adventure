@@ -75,6 +75,7 @@ class HUD extends StatelessWidget {
           label: 'JUMP',
           color: Colors.blue.withValues(alpha: 0.6),
           onTapDown: () => game.player.jumpPressed = true,
+          onTapUp: () => game.player.jumpPressed = false,
         ),
         const SizedBox(width: 16),
         _ControlButton(
