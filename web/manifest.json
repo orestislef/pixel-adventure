@@ -1,11 +1,11 @@
 {
-    "name": "pixel_adventure",
-    "short_name": "pixel_adventure",
+    "name": "Super Platformer",
+    "short_name": "Super Platformer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Super Platformer - A retro-style 2D platformer game",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

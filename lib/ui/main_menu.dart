@@ -60,7 +60,7 @@ class MainMenu extends StatelessWidget {
             colors: [Colors.amber, Colors.orange, Colors.deepOrange],
           ).createShader(bounds),
           child: Text(
-            'PIXEL',
+            'SUPER',
             style: TextStyle(
               fontSize: isSmall ? 40 : 56,
               fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class MainMenu extends StatelessWidget {
             colors: [Colors.lightBlue, Colors.blue, Colors.indigo],
           ).createShader(bounds),
           child: Text(
-            'ADVENTURE',
+            'PLATFORMER',
             style: TextStyle(
               fontSize: isSmall ? 28 : 40,
               fontWeight: FontWeight.bold,
