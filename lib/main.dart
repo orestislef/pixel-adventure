@@ -7,6 +7,7 @@ import 'ui/main_menu.dart';
 import 'ui/pause_menu.dart';
 import 'ui/game_over.dart';
 import 'ui/level_complete.dart';
+import 'ui/victory_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,7 @@ class _GameScreenState extends State<GameScreen> {
           'pauseMenu': (context, game) => PauseMenu(game: game),
           'gameOver': (context, game) => GameOverScreen(game: game),
           'levelComplete': (context, game) => LevelCompleteScreen(game: game),
+          'victory': (context, game) => VictoryScreen(game: game),
         },
         initialActiveOverlays: const ['mainMenu'],
       ),

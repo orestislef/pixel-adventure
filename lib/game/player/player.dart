@@ -230,13 +230,7 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
       velocity.y = -game.tileSize * 4;
       isOnGround = false;
     } else {
-      game.lives--;
-      if (game.lives <= 0) {
-        game.gameState = GameState.gameOver;
-        game.overlays.add('gameOver');
-      } else {
-        resetGame();
-      }
+      game.playerDied();
     }
   }
   

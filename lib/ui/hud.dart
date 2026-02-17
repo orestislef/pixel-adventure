@@ -18,6 +18,23 @@ class HUD extends StatelessWidget {
             child: _buildInfo(),
           ),
           Positioned(
+            top: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: () {
+                if (game.isPlaying) game.pauseGame();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.pause, color: Colors.white, size: 24),
+              ),
+            ),
+          ),
+          Positioned(
             bottom: 16,
             left: 0,
             right: 0,

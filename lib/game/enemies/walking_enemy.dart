@@ -14,29 +14,36 @@ class WalkingEnemy extends PositionComponent with HasGameReference<PixelAdventur
   bool isDead = false;
   double _moveDirection = -1;
   double _animationTime = 0;
-  
+  late double _spawnX;
+  late double _patrolRange;
+
   double get _moveSpeed => game.tileSize * 2.0;
-  
+
   @override
   Future<void> onLoad() async {
     add(RectangleHitbox());
+    _spawnX = position.x;
+    _patrolRange = game.tileSize * 4;
   }
-  
+
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     if (isDead) return;
-    
+
     position.x += _moveDirection * _moveSpeed * dt;
     _animationTime += dt;
-    
-    if (position.x < game.tileSize * 2) {
-      position.x = game.tileSize * 2;
+
+    final minX = (_spawnX - _patrolRange).clamp(0.0, game.levelWidth);
+    final maxX = (_spawnX + _patrolRange).clamp(0.0, game.levelWidth);
+
+    if (position.x < minX) {
+      position.x = minX;
       reverseDirection();
     }
-    if (position.x > game.levelWidth - game.tileSize * 3) {
-      position.x = game.levelWidth - game.tileSize * 3;
+    if (position.x > maxX) {
+      position.x = maxX;
       reverseDirection();
     }
   }

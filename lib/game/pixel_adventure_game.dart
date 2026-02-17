@@ -177,7 +177,10 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
   void loadNextLevel() {
     currentLevel++;
     if (currentLevel > LevelData.totalLevels) {
-      currentLevel = 1;
+      gameState = GameState.gameOver;
+      _checkHighScore();
+      overlays.add('victory');
+      return;
     }
     _clearWorld();
     _createBackground();
@@ -191,14 +194,14 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
 
     if (isPlaying) {
       if (player.position.y > levelHeight + tileSize * 3) {
-        _playerDied();
+        playerDied();
       }
 
       player.position.x = player.position.x.clamp(0.0, levelWidth - player.size.x);
     }
   }
 
-  void _playerDied() {
+  void playerDied() {
     lives--;
     if (lives > 0) {
       player.resetGame();
@@ -240,6 +243,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     _createLevel();
     overlays.remove('gameOver');
     overlays.remove('levelComplete');
+    overlays.remove('victory');
   }
 
   void startGame() {
