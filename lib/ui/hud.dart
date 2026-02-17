@@ -1,11 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../game/pixel_adventure_game.dart';
 import '../utils/constants.dart';
 
-class HUD extends StatelessWidget {
+class HUD extends StatefulWidget {
   final PixelAdventureGame game;
 
   const HUD({super.key, required this.game});
+
+  @override
+  State<HUD> createState() => _HUDState();
+}
+
+class _HUDState extends State<HUD> with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+
+  PixelAdventureGame get game => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker((_) => setState(() {}));
+    _ticker.start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +105,82 @@ class HUD extends StatelessWidget {
               onTapUp: () => game.player.jumpPressed = false,
             ),
           ),
+          // Power-up notification (center top)
+          if (game.activeNotification != null)
+            Positioned(
+              top: isSmall ? 36 : 48,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: isSmall ? 14 : 20, vertical: isSmall ? 6 : 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.amber, width: 1.5),
+                  ),
+                  child: Text(
+                    game.activeNotification!,
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: isSmall ? 13 : 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Active power-up indicators (top-center)
+          if (game.player.hasShield || game.player.hasSpeedBoost)
+            Positioned(
+              top: isSmall ? 4 : 8,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (game.player.hasShield)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 14, vertical: isSmall ? 3 : 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2196F3).withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shield, color: Colors.white, size: isSmall ? 14 : 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Shield',
+                            style: TextStyle(color: Colors.white, fontSize: isSmall ? 12 : 15, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (game.player.hasShield && game.player.hasSpeedBoost) const SizedBox(width: 8),
+                  if (game.player.hasSpeedBoost)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: isSmall ? 10 : 14, vertical: isSmall ? 3 : 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.flash_on, color: Colors.white, size: isSmall ? 14 : 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${game.player.speedBoostTimeLeft.ceil()}s',
+                            style: TextStyle(color: Colors.white, fontSize: isSmall ? 12 : 15, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
         ],
       ),
     );

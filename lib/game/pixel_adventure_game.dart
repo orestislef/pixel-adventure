@@ -30,6 +30,13 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
 
   bool get isPlaying => gameState == GameState.playing;
 
+  // Power-up notification
+  String? activeNotification;
+  double _notificationTimer = 0;
+
+  @override
+  Color backgroundColor() => const Color(0xFF87CEEB);
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
@@ -58,9 +65,17 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     levelWidth = screenWidth * widthMultiplier;
   }
 
+  void showNotification(String message, {double duration = 2.5}) {
+    activeNotification = message;
+    _notificationTimer = duration;
+  }
+
   void _createBackground() {
+    // Extend background well beyond camera bounds to prevent black edges
+    final padding = size.x;
     final bg = RectangleComponent(
-      size: Vector2(levelWidth, levelHeight),
+      position: Vector2(-padding, -padding),
+      size: Vector2(levelWidth + padding * 2, levelHeight + padding * 2),
       paint: Paint()..color = const Color(0xFF87CEEB),
     );
     world.add(bg);
@@ -182,9 +197,22 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
   void update(double dt) {
     super.update(dt);
 
+    // Update notification timer
+    if (_notificationTimer > 0) {
+      _notificationTimer -= dt;
+      if (_notificationTimer <= 0) {
+        activeNotification = null;
+        _notificationTimer = 0;
+      }
+    }
+
     if (isPlaying) {
+      // Don't interfere during death animation
+      if (player.state == PlayerState.dying) return;
+
       if (player.position.y > levelHeight + tileSize * 3) {
-        playerDied();
+        // Fell into void — skip animation, resolve directly
+        resolvePlayerDeath();
       }
 
       player.position.x = player.position.x.clamp(0.0, levelWidth - player.size.x);
@@ -192,6 +220,11 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
   }
 
   void playerDied() {
+    if (player.state == PlayerState.dying) return;
+    player.startDeathAnimation();
+  }
+
+  void resolvePlayerDeath() {
     lives--;
     if (lives > 0) {
       player.resetGame();

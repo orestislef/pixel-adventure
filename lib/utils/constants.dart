@@ -23,6 +23,7 @@ enum PlayerState {
   running,
   jumping,
   falling,
+  dying,
   dead,
 }
 

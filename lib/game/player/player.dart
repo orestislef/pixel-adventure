@@ -28,7 +28,11 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
 
   bool hasShield = false;
   bool hasSpeedBoost = false;
-  double _speedBoostTimer = 0;
+  double speedBoostTimeLeft = 0;
+
+  double _deathTimer = 0;
+  double _deathRotation = 0;
+  static const double _deathAnimationDuration = 1.8;
 
   PlayerState state = PlayerState.idle;
   
@@ -55,7 +59,15 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     _groundContactCount = 0;
     hasShield = false;
     hasSpeedBoost = false;
-    _speedBoostTimer = 0;
+    speedBoostTimeLeft = 0;
+    _deathTimer = 0;
+    _deathRotation = 0;
+    state = PlayerState.idle;
+
+    // Re-add hitbox if missing
+    if (children.whereType<RectangleHitbox>().isEmpty) {
+      add(RectangleHitbox());
+    }
   }
   
   @override
@@ -70,12 +82,32 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     return true;
   }
 
+  void startDeathAnimation() {
+    if (state == PlayerState.dying) return;
+    isDead = true;
+    state = PlayerState.dying;
+    _deathTimer = 0;
+    _deathRotation = 0;
+    velocity.x = 0;
+    velocity.y = -game.tileSize * 10;
+    isOnGround = false;
+    _groundContactCount = 0;
+
+    // Remove hitbox so player falls through ground
+    children.whereType<RectangleHitbox>().forEach(remove);
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
-    
+
+    if (state == PlayerState.dying) {
+      _updateDeathAnimation(dt);
+      return;
+    }
+
     if (isDead || !game.isPlaying) return;
-    
+
     _updatePowerUps(dt);
     _updateMovement(dt);
     _updateJump(dt);
@@ -83,13 +115,27 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     _updatePosition(dt);
     _updateState();
   }
+
+  void _updateDeathAnimation(double dt) {
+    _deathTimer += dt;
+    _deathRotation += dt * 8;
+
+    // Apply gravity (stronger than normal for dramatic fall)
+    velocity.y += GameConstants.gravity * 100 * dt;
+    position.y += velocity.y * dt;
+
+    if (_deathTimer >= _deathAnimationDuration) {
+      state = PlayerState.dead;
+      game.resolvePlayerDeath();
+    }
+  }
   
   void _updatePowerUps(double dt) {
     if (hasSpeedBoost) {
-      _speedBoostTimer -= dt;
-      if (_speedBoostTimer <= 0) {
+      speedBoostTimeLeft -= dt;
+      if (speedBoostTimeLeft <= 0) {
         hasSpeedBoost = false;
-        _speedBoostTimer = 0;
+        speedBoostTimeLeft = 0;
       }
     }
   }
@@ -177,9 +223,11 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
       switch (other.type) {
         case PowerUpType.shield:
           hasShield = true;
+          game.showNotification('Shield! Blocks 1 hit');
         case PowerUpType.speed:
           hasSpeedBoost = true;
-          _speedBoostTimer = GameConstants.speedBoostDuration;
+          speedBoostTimeLeft = GameConstants.speedBoostDuration;
+          game.showNotification('Speed Boost! ${GameConstants.speedBoostDuration.toInt()}s');
       }
     }
   }
@@ -243,15 +291,25 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    
+
     canvas.save();
+
+    // Death animation: rotate around center
+    if (state == PlayerState.dying) {
+      canvas.translate(size.x / 2, size.y / 2);
+      canvas.rotate(_deathRotation);
+      canvas.translate(-size.x / 2, -size.y / 2);
+    }
+
     if (!isFacingRight) {
       canvas.scale(-1, 1);
       canvas.translate(-size.x, 0);
     }
     
     final Color bodyColor;
-    if (hasShield) {
+    if (state == PlayerState.dying) {
+      bodyColor = const Color(0xFFE53935);
+    } else if (hasShield) {
       bodyColor = const Color(0xFF00BCD4);
     } else if (hasSpeedBoost) {
       bodyColor = const Color(0xFFFFC107);
