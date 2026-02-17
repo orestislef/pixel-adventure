@@ -49,6 +49,18 @@ class GameOverScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: isSmallScreen ? 12 : 16),
+                if (game.score >= game.highScore && game.score > 0)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: isSmallScreen ? 8 : 12),
+                    child: Text(
+                      'NEW HIGH SCORE!',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: isSmallScreen ? 16 : 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 _buildFinalScore(isSmallScreen),
                 SizedBox(height: isSmallScreen ? 16 : 24),
                 _buildRetryButton(isSmallScreen),
@@ -99,6 +111,21 @@ class GameOverScreen extends StatelessWidget {
                 'Coins: ${game.coins}',
                 style: TextStyle(
                   color: Colors.yellow,
+                  fontSize: isSmall ? 14 : 16,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: isSmall ? 8 : 12),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.emoji_events, color: Colors.amber, size: isSmall ? 16 : 20),
+              const SizedBox(width: 6),
+              Text(
+                'Best: ${game.highScore}',
+                style: TextStyle(
+                  color: Colors.amber,
                   fontSize: isSmall ? 14 : 16,
                 ),
               ),

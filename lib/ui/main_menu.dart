@@ -24,6 +24,24 @@ class MainMenu extends StatelessWidget {
               _buildTitle(isSmallScreen),
               SizedBox(height: isSmallScreen ? 24 : 40),
               _buildPlayButton(context, isSmallScreen),
+              if (game.highScore > 0) ...[
+                SizedBox(height: isSmallScreen ? 10 : 14),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.emoji_events, color: Colors.amber, size: isSmallScreen ? 18 : 22),
+                    const SizedBox(width: 6),
+                    Text(
+                      'HIGH SCORE: ${game.highScore}',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: isSmallScreen ? 14 : 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               SizedBox(height: isSmallScreen ? 16 : 24),
               _buildInstructions(isSmallScreen),
             ],

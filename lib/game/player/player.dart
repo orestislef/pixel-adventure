@@ -9,6 +9,7 @@ import '../platforms/platform.dart';
 import '../enemies/walking_enemy.dart';
 import '../items/coin.dart';
 import '../items/flag.dart';
+import '../items/power_up.dart';
 
 class Player extends PositionComponent with CollisionCallbacks, HasGameReference<PixelAdventureGame>, KeyboardHandler {
   Player({required Vector2 position}) : super(
@@ -24,7 +25,11 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
   bool _isJumping = false;
   double _jumpTime = 0;
   int _groundContactCount = 0;
-  
+
+  bool hasShield = false;
+  bool hasSpeedBoost = false;
+  double _speedBoostTimer = 0;
+
   PlayerState state = PlayerState.idle;
   
   bool moveLeft = false;
@@ -48,6 +53,9 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     isOnGround = false;
     _isJumping = false;
     _groundContactCount = 0;
+    hasShield = false;
+    hasSpeedBoost = false;
+    _speedBoostTimer = 0;
   }
   
   @override
@@ -68,6 +76,7 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     
     if (isDead || !game.isPlaying) return;
     
+    _updatePowerUps(dt);
     _updateMovement(dt);
     _updateJump(dt);
     _applyGravity(dt);
@@ -75,10 +84,21 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     _updateState();
   }
   
+  void _updatePowerUps(double dt) {
+    if (hasSpeedBoost) {
+      _speedBoostTimer -= dt;
+      if (_speedBoostTimer <= 0) {
+        hasSpeedBoost = false;
+        _speedBoostTimer = 0;
+      }
+    }
+  }
+
   void _updateMovement(double dt) {
+    final speed = hasSpeedBoost ? _moveSpeed * 1.8 : _moveSpeed;
     velocity.x = 0;
-    if (moveLeft) { velocity.x = -_moveSpeed; isFacingRight = false; }
-    if (moveRight) { velocity.x = _moveSpeed; isFacingRight = true; }
+    if (moveLeft) { velocity.x = -speed; isFacingRight = false; }
+    if (moveRight) { velocity.x = speed; isFacingRight = true; }
   }
   
   void _updateJump(double dt) {
@@ -151,6 +171,17 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     if (other is Flag) {
       game.completeLevel();
     }
+
+    if (other is PowerUp && !other.isCollected) {
+      other.collect();
+      switch (other.type) {
+        case PowerUpType.shield:
+          hasShield = true;
+        case PowerUpType.speed:
+          hasSpeedBoost = true;
+          _speedBoostTimer = GameConstants.speedBoostDuration;
+      }
+    }
   }
 
   void _handleGroundCollision(PositionComponent other) {
@@ -194,6 +225,10 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
       game.playerHitEnemy();
       velocity.y = -game.tileSize * 6;
       isOnGround = false;
+    } else if (hasShield) {
+      hasShield = false;
+      velocity.y = -game.tileSize * 4;
+      isOnGround = false;
     } else {
       game.lives--;
       if (game.lives <= 0) {
@@ -221,7 +256,15 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
       canvas.translate(-size.x, 0);
     }
     
-    final bodyPaint = Paint()..color = const Color(0xFF2196F3);
+    final Color bodyColor;
+    if (hasShield) {
+      bodyColor = const Color(0xFF00BCD4);
+    } else if (hasSpeedBoost) {
+      bodyColor = const Color(0xFFFFC107);
+    } else {
+      bodyColor = const Color(0xFF2196F3);
+    }
+    final bodyPaint = Paint()..color = bodyColor;
     canvas.drawRect(Rect.fromLTWH(3, 0, 18, 20), bodyPaint);
 
     final headPaint = Paint()..color = const Color(0xFFFFCC80);

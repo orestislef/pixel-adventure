@@ -4,55 +4,60 @@ import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../utils/high_score_service.dart';
+import 'levels/level_data.dart';
 import 'player/player.dart';
 import 'platforms/ground.dart';
 import 'platforms/platform.dart';
 import 'enemies/walking_enemy.dart';
 import 'items/coin.dart';
 import 'items/flag.dart';
+import 'items/power_up.dart';
 
 class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboardHandlerComponents {
   late Player player;
-  
+
   late double levelWidth;
   late double levelHeight;
   late double tileSize;
-  
+
   GameState gameState = GameState.menu;
   int score = 0;
   int coins = 0;
   int lives = GameConstants.maxLives;
   int currentLevel = 1;
-  
+  int highScore = 0;
+
   bool get isPlaying => gameState == GameState.playing;
-  
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    
+
+    highScore = await HighScoreService.getHighScore();
+
     _calculateDimensions();
-    
+    _updateLevelWidth(LevelData.getLevel(currentLevel).widthMultiplier);
+
     camera.viewfinder.anchor = Anchor.center;
-    
-    debugPrint('=== GAME LOADED ===');
-    debugPrint('Screen size: $size');
-    debugPrint('Level: ${levelWidth}x$levelHeight, tileSize: $tileSize');
-    
+
     _createBackground();
     _createLevel();
-    
+
     overlays.add('hud');
   }
-  
+
   void _calculateDimensions() {
     final screenHeight = size.y;
-    final screenWidth = size.x;
-    
     levelHeight = screenHeight * 0.92;
     tileSize = levelHeight / 12;
-    levelWidth = screenWidth * 8;
   }
-  
+
+  void _updateLevelWidth(double widthMultiplier) {
+    final screenWidth = size.x;
+    levelWidth = screenWidth * widthMultiplier;
+  }
+
   void _createBackground() {
     final bg = RectangleComponent(
       size: Vector2(levelWidth, levelHeight),
@@ -87,13 +92,17 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
       ));
     }
   }
-  
+
+  void _clearWorld() {
+    world.removeAll(world.children);
+  }
+
   void _createLevel() {
-    debugPrint('Creating level...');
-    
+    final levelData = LevelData.getLevel(currentLevel);
+    _updateLevelWidth(levelData.widthMultiplier);
+
     final groundY = levelHeight - tileSize;
-    debugPrint('Ground Y: $groundY (ground top)');
-    
+
     final ground = Ground(
       position: Vector2(0, groundY),
       size: Vector2(levelWidth, tileSize),
@@ -102,39 +111,15 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
 
     player = Player(position: Vector2(tileSize * 3, groundY));
     world.add(player);
-    
-    final levelLayout = [
-      {'x': 5, 'type': 'gap', 'width': 4},
-      {'x': 12, 'type': 'platform', 'height': 2},
-      {'x': 18, 'type': 'enemy'},
-      {'x': 22, 'type': 'platform', 'height': 2.5},
-      {'x': 26, 'type': 'coin_row', 'count': 3},
-      {'x': 32, 'type': 'platform', 'height': 3},
-      {'x': 38, 'type': 'enemy'},
-      {'x': 42, 'type': 'gap', 'width': 5},
-      {'x': 50, 'type': 'platform', 'height': 2},
-      {'x': 56, 'type': 'stair', 'steps': 4},
-      {'x': 66, 'type': 'enemy'},
-      {'x': 70, 'type': 'platform', 'height': 3.5},
-      {'x': 76, 'type': 'gap', 'width': 4},
-      {'x': 84, 'type': 'platform', 'height': 2},
-      {'x': 90, 'type': 'enemy'},
-      {'x': 94, 'type': 'platform', 'height': 2.5},
-      {'x': 100, 'type': 'coin_row', 'count': 5},
-      {'x': 108, 'type': 'stair', 'steps': 5},
-      {'x': 120, 'type': 'platform', 'height': 3},
-      {'x': 126, 'type': 'enemy'},
-      {'x': 130, 'type': 'gap', 'width': 6},
-    ];
-    
+
     double gapEndX = 0;
-    
-    for (final item in levelLayout) {
+
+    for (final item in levelData.layout) {
       final x = (item['x'] as num) * tileSize;
       final type = item['type'] as String;
-      
+
       if (x < gapEndX) continue;
-      
+
       switch (type) {
         case 'platform':
           final height = (item['height'] as num) * tileSize;
@@ -168,9 +153,17 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
             ));
           }
           break;
+
+        case 'powerup_shield':
+          world.add(PowerUp(position: Vector2(x, groundY - tileSize * 1.5), type: PowerUpType.shield));
+          break;
+
+        case 'powerup_speed':
+          world.add(PowerUp(position: Vector2(x, groundY - tileSize * 1.5), type: PowerUpType.speed));
+          break;
       }
     }
-    
+
     world.add(Flag(position: Vector2(levelWidth - tileSize * 4, groundY)));
 
     camera.follow(player, horizontalOnly: true, snap: true);
@@ -179,66 +172,87 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
       Rectangle.fromLTWH(0, 0, levelWidth, levelHeight),
       considerViewport: true,
     );
-    
-    debugPrint('Player created at: ${player.position}');
-    debugPrint('Player size: ${player.size}');
-    debugPrint('Level width: $levelWidth');
   }
-  
+
+  void loadNextLevel() {
+    currentLevel++;
+    if (currentLevel > LevelData.totalLevels) {
+      currentLevel = 1;
+    }
+    _clearWorld();
+    _createBackground();
+    _createLevel();
+    gameState = GameState.playing;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     if (isPlaying) {
       if (player.position.y > levelHeight + tileSize * 3) {
         _playerDied();
       }
-      
+
       player.position.x = player.position.x.clamp(0.0, levelWidth - player.size.x);
     }
   }
-  
+
   void _playerDied() {
     lives--;
     if (lives > 0) {
       player.resetGame();
     } else {
       gameState = GameState.gameOver;
+      _checkHighScore();
       overlays.add('gameOver');
     }
   }
-  
+
   void playerHitEnemy() => score += GameConstants.enemyScore;
   void collectCoin() {
     coins++;
     score += GameConstants.coinScore;
   }
+
   void completeLevel() {
+    if (gameState == GameState.levelComplete) return;
     gameState = GameState.levelComplete;
+    _checkHighScore();
     overlays.add('levelComplete');
   }
-  
+
+  void _checkHighScore() {
+    if (score > highScore) {
+      highScore = score;
+      HighScoreService.saveHighScore(score);
+    }
+  }
+
   void restart() {
     score = 0;
     coins = 0;
     lives = GameConstants.maxLives;
+    currentLevel = 1;
     gameState = GameState.playing;
-    player.resetGame();
+    _clearWorld();
+    _createBackground();
+    _createLevel();
     overlays.remove('gameOver');
     overlays.remove('levelComplete');
   }
-  
+
   void startGame() {
     gameState = GameState.playing;
     restart();
     overlays.remove('mainMenu');
   }
-  
+
   void pauseGame() {
     gameState = GameState.paused;
     overlays.add('pauseMenu');
   }
-  
+
   void resumeGame() {
     gameState = GameState.playing;
     overlays.remove('pauseMenu');
@@ -246,11 +260,11 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
 }
 
 class Mountain extends PositionComponent {
-  Mountain({required Vector2 position, required double height, required double width, required this.color}) 
+  Mountain({required Vector2 position, required double height, required double width, required this.color})
     : super(position: position, size: Vector2(width, height), anchor: Anchor.bottomCenter);
-  
+
   final Color color;
-  
+
   @override
   void render(Canvas canvas) {
     final paint = Paint()..color = color;
@@ -273,7 +287,7 @@ class Mountain extends PositionComponent {
 
 class Cloud extends PositionComponent with HasGameReference<PixelAdventureGame> {
   Cloud({required super.position}) : super(size: Vector2(60, 30));
-  
+
   @override
   void render(Canvas canvas) {
     final paint = Paint()..color = Colors.white.withValues(alpha: 0.9);
@@ -281,7 +295,7 @@ class Cloud extends PositionComponent with HasGameReference<PixelAdventureGame> 
     canvas.drawOval(const Rect.fromLTWH(15, 0, 35, 22), paint);
     canvas.drawOval(const Rect.fromLTWH(40, 8, 20, 14), paint);
   }
-  
+
   @override
   void update(double dt) {
     position.x += 5 * dt;
@@ -290,9 +304,9 @@ class Cloud extends PositionComponent with HasGameReference<PixelAdventureGame> 
 }
 
 class Bush extends PositionComponent {
-  Bush({required Vector2 position, required double size}) 
+  Bush({required Vector2 position, required double size})
     : super(position: position, size: Vector2(size * 2, size), anchor: Anchor.bottomCenter);
-  
+
   @override
   void render(Canvas canvas) {
     final paint = Paint()..color = const Color(0xFF388E3C);

@@ -6,6 +6,8 @@ class GameConstants {
 
   static const int coinScore = 100;
   static const int enemyScore = 200;
+
+  static const double speedBoostDuration = 5.0;
 }
 
 enum GameState {
@@ -22,4 +24,9 @@ enum PlayerState {
   jumping,
   falling,
   dead,
+}
+
+enum PowerUpType {
+  shield,
+  speed,
 }

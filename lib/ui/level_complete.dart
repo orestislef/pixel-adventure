@@ -138,9 +138,7 @@ class LevelCompleteScreen extends StatelessWidget {
     return ElevatedButton.icon(
       onPressed: () {
         game.overlays.remove('levelComplete');
-        game.gameState = GameState.playing;
-        game.currentLevel++;
-        game.player.resetGame();
+        game.loadNextLevel();
       },
       icon: Icon(Icons.arrow_forward, size: isSmall ? 20 : 24),
       label: Text(
