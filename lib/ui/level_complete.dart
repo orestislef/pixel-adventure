@@ -137,7 +137,7 @@ class LevelCompleteScreen extends StatelessWidget {
   Widget _buildContinueButton(bool isSmall) {
     return ElevatedButton.icon(
       onPressed: () {
-        game.overlays.remove('levelComplete');
+        game.overlays.remove(OverlayId.levelComplete.name);
         game.loadNextLevel();
       },
       icon: Icon(Icons.arrow_forward, size: isSmall ? 20 : 24),
@@ -159,9 +159,9 @@ class LevelCompleteScreen extends StatelessWidget {
   Widget _buildMainMenuButton(bool isSmall) {
     return TextButton.icon(
       onPressed: () {
-        game.overlays.remove('levelComplete');
+        game.overlays.remove(OverlayId.levelComplete.name);
         game.gameState = GameState.menu;
-        game.overlays.add('mainMenu');
+        game.overlays.add(OverlayId.mainMenu.name);
       },
       icon: Icon(Icons.home, color: Colors.white70, size: isSmall ? 16 : 20),
       label: Text(

@@ -4,19 +4,29 @@ import '../utils/constants.dart';
 
 class HUD extends StatelessWidget {
   final PixelAdventureGame game;
-  
+
   const HUD({super.key, required this.game});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmall = screenHeight < 500;
+    final btnSize = isSmall ? 56.0 : 66.0;
+    final jumpWidth = isSmall ? 72.0 : 86.0;
+    final iconSize = isSmall ? 32.0 : 40.0;
+    final edgePad = screenWidth * 0.03;
+
     return SafeArea(
       child: Stack(
         children: [
+          // Top-left: score, coins, lives
           Positioned(
             top: 8,
             left: 8,
-            child: _buildInfo(),
+            child: _buildInfo(isSmall),
           ),
+          // Top-right: pause button
           Positioned(
             top: 8,
             right: 8,
@@ -30,24 +40,56 @@ class HUD extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.pause, color: Colors.white, size: 24),
+                child: Icon(Icons.pause, color: Colors.white, size: isSmall ? 20 : 24),
               ),
             ),
           ),
+          // Bottom-left: movement buttons
           Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: _buildControls(),
+            bottom: isSmall ? 12 : 20,
+            left: edgePad,
+            child: Row(
+              children: [
+                _ControlButton(
+                  icon: Icons.arrow_left,
+                  size: btnSize,
+                  iconSize: iconSize,
+                  onTapDown: () => game.player.moveLeft = true,
+                  onTapUp: () => game.player.moveLeft = false,
+                ),
+                SizedBox(width: isSmall ? 8 : 12),
+                _ControlButton(
+                  icon: Icons.arrow_right,
+                  size: btnSize,
+                  iconSize: iconSize,
+                  onTapDown: () => game.player.moveRight = true,
+                  onTapUp: () => game.player.moveRight = false,
+                ),
+              ],
+            ),
+          ),
+          // Bottom-right: jump button
+          Positioned(
+            bottom: isSmall ? 12 : 20,
+            right: edgePad,
+            child: _ControlButton(
+              icon: Icons.arrow_upward,
+              width: jumpWidth,
+              size: btnSize,
+              iconSize: iconSize,
+              color: Colors.blue.withValues(alpha: 0.6),
+              onTapDown: () => game.player.jumpPressed = true,
+              onTapUp: () => game.player.jumpPressed = false,
+            ),
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildInfo() {
+
+  Widget _buildInfo(bool isSmall) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: isSmall ? 8 : 12, vertical: isSmall ? 4 : 6),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(8),
@@ -57,64 +99,42 @@ class HUD extends StatelessWidget {
         children: [
           Text(
             'Score: ${game.score}',
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(color: Colors.white, fontSize: isSmall ? 11 : 14),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isSmall ? 8 : 12),
           Text(
             'Coins: ${game.coins}',
-            style: const TextStyle(color: Colors.yellow, fontSize: 14),
+            style: TextStyle(color: Colors.yellow, fontSize: isSmall ? 11 : 14),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isSmall ? 8 : 12),
           ...List.generate(
             GameConstants.maxLives,
             (i) => Icon(
               Icons.favorite,
               color: i < game.lives ? Colors.red : Colors.grey,
-              size: 16,
+              size: isSmall ? 13 : 16,
             ),
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _ControlButton(
-          icon: Icons.arrow_left,
-          onTapDown: () => game.player.moveLeft = true,
-          onTapUp: () => game.player.moveLeft = false,
-        ),
-        const SizedBox(width: 16),
-        _ControlButton(
-          label: 'JUMP',
-          color: Colors.blue.withValues(alpha: 0.6),
-          onTapDown: () => game.player.jumpPressed = true,
-          onTapUp: () => game.player.jumpPressed = false,
-        ),
-        const SizedBox(width: 16),
-        _ControlButton(
-          icon: Icons.arrow_right,
-          onTapDown: () => game.player.moveRight = true,
-          onTapUp: () => game.player.moveRight = false,
-        ),
-      ],
-    );
-  }
 }
 
 class _ControlButton extends StatefulWidget {
-  final IconData? icon;
-  final String? label;
+  final IconData icon;
+  final double size;
+  final double? width;
+  final double iconSize;
   final Color? color;
   final VoidCallback? onTapDown;
   final VoidCallback? onTapUp;
-  
+
   const _ControlButton({
-    this.icon,
-    this.label,
+    required this.icon,
+    required this.size,
+    this.width,
+    required this.iconSize,
     this.color,
     this.onTapDown,
     this.onTapUp,
@@ -126,9 +146,11 @@ class _ControlButton extends StatefulWidget {
 
 class _ControlButtonState extends State<_ControlButton> {
   bool _pressed = false;
-  
+
   @override
   Widget build(BuildContext context) {
+    final baseColor = widget.color ?? Colors.black.withValues(alpha: 0.5);
+
     return GestureDetector(
       onTapDown: (_) {
         setState(() => _pressed = true);
@@ -143,20 +165,17 @@ class _ControlButtonState extends State<_ControlButton> {
         widget.onTapUp?.call();
       },
       child: Container(
-        width: widget.label != null ? 80 : 70,
-        height: 70,
+        width: widget.width ?? widget.size,
+        height: widget.size,
         decoration: BoxDecoration(
-          color: (widget.color ?? Colors.black.withValues(alpha: 0.5)).withValues(alpha: _pressed ? 0.8 : null),
-          borderRadius: BorderRadius.circular(12),
+          color: _pressed ? baseColor.withValues(alpha: 0.8) : baseColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: _pressed ? 0.4 : 0.2),
+            width: 1.5,
+          ),
         ),
-        child: widget.icon != null
-            ? Icon(widget.icon, color: Colors.white, size: 40)
-            : Center(
-                child: Text(
-                  widget.label!,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+        child: Icon(widget.icon, color: Colors.white, size: widget.iconSize),
       ),
     );
   }

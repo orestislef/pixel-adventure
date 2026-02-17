@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/pixel_adventure_game.dart';
+import '../utils/constants.dart';
 
 class PauseMenu extends StatelessWidget {
   final PixelAdventureGame game;
@@ -80,7 +81,7 @@ class PauseMenu extends StatelessWidget {
   Widget _buildRestartButton(bool isSmall) {
     return ElevatedButton.icon(
       onPressed: () {
-        game.overlays.remove('pauseMenu');
+        game.overlays.remove(OverlayId.pauseMenu.name);
         game.restart();
       },
       icon: Icon(Icons.refresh, size: isSmall ? 20 : 24),

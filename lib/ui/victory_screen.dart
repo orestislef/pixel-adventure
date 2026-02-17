@@ -132,7 +132,7 @@ class VictoryScreen extends StatelessWidget {
   Widget _buildPlayAgainButton(bool isSmall) {
     return ElevatedButton.icon(
       onPressed: () {
-        game.overlays.remove('victory');
+        game.overlays.remove(OverlayId.victory.name);
         game.restart();
       },
       icon: Icon(Icons.replay, size: isSmall ? 20 : 24),
@@ -154,9 +154,9 @@ class VictoryScreen extends StatelessWidget {
   Widget _buildMainMenuButton(bool isSmall) {
     return TextButton.icon(
       onPressed: () {
-        game.overlays.remove('victory');
+        game.overlays.remove(OverlayId.victory.name);
         game.gameState = GameState.menu;
-        game.overlays.add('mainMenu');
+        game.overlays.add(OverlayId.mainMenu.name);
       },
       icon: Icon(Icons.home, color: Colors.white70, size: isSmall ? 16 : 20),
       label: Text(

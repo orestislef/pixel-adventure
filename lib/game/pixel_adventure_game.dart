@@ -44,7 +44,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     _createBackground();
     _createLevel();
 
-    overlays.add('hud');
+    overlays.add(OverlayId.hud.name);
   }
 
   void _calculateDimensions() {
@@ -116,35 +116,31 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
 
     for (final item in levelData.layout) {
       final x = (item['x'] as num) * tileSize;
-      final type = item['type'] as String;
+      final type = item['type'] as LevelItemType;
 
       if (x < gapEndX) continue;
 
       switch (type) {
-        case 'platform':
+        case LevelItemType.platform:
           final height = (item['height'] as num) * tileSize;
           final platY = groundY - height;
           world.add(Platform(position: Vector2(x, platY), size: Vector2(tileSize * 4, tileSize * 0.75)));
           world.add(Coin(position: Vector2(x + tileSize * 2, platY - tileSize * 0.5)));
-          break;
 
-        case 'enemy':
+        case LevelItemType.enemy:
           world.add(WalkingEnemy(position: Vector2(x, groundY)));
-          break;
 
-        case 'gap':
+        case LevelItemType.gap:
           final width = (item['width'] as num) * tileSize;
           gapEndX = x + width;
-          break;
 
-        case 'coin_row':
+        case LevelItemType.coinRow:
           final count = item['count'] as int;
           for (int i = 0; i < count; i++) {
             world.add(Coin(position: Vector2(x + i * tileSize * 1.2, groundY - tileSize * 2)));
           }
-          break;
 
-        case 'stair':
+        case LevelItemType.stair:
           final steps = item['steps'] as int;
           for (int i = 0; i < steps; i++) {
             world.add(Platform(
@@ -152,15 +148,12 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
               size: Vector2(tileSize * 2, tileSize * 0.8),
             ));
           }
-          break;
 
-        case 'powerup_shield':
+        case LevelItemType.powerupShield:
           world.add(PowerUp(position: Vector2(x, groundY - tileSize * 1.5), type: PowerUpType.shield));
-          break;
 
-        case 'powerup_speed':
+        case LevelItemType.powerupSpeed:
           world.add(PowerUp(position: Vector2(x, groundY - tileSize * 1.5), type: PowerUpType.speed));
-          break;
       }
     }
 
@@ -179,7 +172,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     if (currentLevel > LevelData.totalLevels) {
       gameState = GameState.gameOver;
       _checkHighScore();
-      overlays.add('victory');
+      overlays.add(OverlayId.victory.name);
       return;
     }
     _clearWorld();
@@ -208,7 +201,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     } else {
       gameState = GameState.gameOver;
       _checkHighScore();
-      overlays.add('gameOver');
+      overlays.add(OverlayId.gameOver.name);
     }
   }
 
@@ -222,7 +215,7 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     if (gameState == GameState.levelComplete) return;
     gameState = GameState.levelComplete;
     _checkHighScore();
-    overlays.add('levelComplete');
+    overlays.add(OverlayId.levelComplete.name);
   }
 
   void _checkHighScore() {
@@ -241,25 +234,25 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     _clearWorld();
     _createBackground();
     _createLevel();
-    overlays.remove('gameOver');
-    overlays.remove('levelComplete');
-    overlays.remove('victory');
+    overlays.remove(OverlayId.gameOver.name);
+    overlays.remove(OverlayId.levelComplete.name);
+    overlays.remove(OverlayId.victory.name);
   }
 
   void startGame() {
     gameState = GameState.playing;
     restart();
-    overlays.remove('mainMenu');
+    overlays.remove(OverlayId.mainMenu.name);
   }
 
   void pauseGame() {
     gameState = GameState.paused;
-    overlays.add('pauseMenu');
+    overlays.add(OverlayId.pauseMenu.name);
   }
 
   void resumeGame() {
     gameState = GameState.playing;
-    overlays.remove('pauseMenu');
+    overlays.remove(OverlayId.pauseMenu.name);
   }
 }
 

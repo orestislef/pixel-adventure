@@ -139,7 +139,7 @@ class GameOverScreen extends StatelessWidget {
   Widget _buildRetryButton(bool isSmall) {
     return ElevatedButton.icon(
       onPressed: () {
-        game.overlays.remove('gameOver');
+        game.overlays.remove(OverlayId.gameOver.name);
         game.restart();
       },
       icon: Icon(Icons.refresh, size: isSmall ? 20 : 24),
@@ -161,9 +161,9 @@ class GameOverScreen extends StatelessWidget {
   Widget _buildMainMenuButton(bool isSmall) {
     return TextButton.icon(
       onPressed: () {
-        game.overlays.remove('gameOver');
+        game.overlays.remove(OverlayId.gameOver.name);
         game.gameState = GameState.menu;
-        game.overlays.add('mainMenu');
+        game.overlays.add(OverlayId.mainMenu.name);
       },
       icon: Icon(Icons.home, color: Colors.white70, size: isSmall ? 16 : 20),
       label: Text(

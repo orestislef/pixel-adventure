@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import 'game/pixel_adventure_game.dart';
+import 'utils/constants.dart';
 import 'ui/hud.dart';
 import 'ui/main_menu.dart';
 import 'ui/pause_menu.dart';
@@ -62,14 +63,14 @@ class _GameScreenState extends State<GameScreen> {
       body: GameWidget<PixelAdventureGame>(
         game: game,
         overlayBuilderMap: {
-          'hud': (context, game) => HUD(game: game),
-          'mainMenu': (context, game) => MainMenu(game: game),
-          'pauseMenu': (context, game) => PauseMenu(game: game),
-          'gameOver': (context, game) => GameOverScreen(game: game),
-          'levelComplete': (context, game) => LevelCompleteScreen(game: game),
-          'victory': (context, game) => VictoryScreen(game: game),
+          OverlayId.hud.name: (context, game) => HUD(game: game),
+          OverlayId.mainMenu.name: (context, game) => MainMenu(game: game),
+          OverlayId.pauseMenu.name: (context, game) => PauseMenu(game: game),
+          OverlayId.gameOver.name: (context, game) => GameOverScreen(game: game),
+          OverlayId.levelComplete.name: (context, game) => LevelCompleteScreen(game: game),
+          OverlayId.victory.name: (context, game) => VictoryScreen(game: game),
         },
-        initialActiveOverlays: const ['mainMenu'],
+        initialActiveOverlays: [OverlayId.mainMenu.name],
       ),
     );
   }

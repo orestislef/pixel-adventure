@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game/pixel_adventure_game.dart';
+import '../utils/constants.dart';
 
 class MainMenu extends StatelessWidget {
   final PixelAdventureGame game;
@@ -103,7 +104,7 @@ class MainMenu extends StatelessWidget {
   Widget _buildPlayButton(BuildContext context, bool isSmall) {
     return ElevatedButton(
       onPressed: () {
-        game.overlays.remove('mainMenu');
+        game.overlays.remove(OverlayId.mainMenu.name);
         game.startGame();
       },
       style: ElevatedButton.styleFrom(

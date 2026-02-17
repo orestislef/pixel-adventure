@@ -30,3 +30,22 @@ enum PowerUpType {
   shield,
   speed,
 }
+
+enum OverlayId {
+  hud,
+  mainMenu,
+  pauseMenu,
+  gameOver,
+  levelComplete,
+  victory,
+}
+
+enum LevelItemType {
+  platform,
+  enemy,
+  gap,
+  coinRow,
+  stair,
+  powerupShield,
+  powerupSpeed,
+}
