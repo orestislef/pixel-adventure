@@ -13,7 +13,9 @@
       "Bash(done)",
       "Bash(file:*)",
       "Bash(dart run:*)",
-      "Bash(MSYS_NO_PATHCONV=1 flutter build:*)"
+      "Bash(MSYS_NO_PATHCONV=1 flutter build:*)",
+      "Bash(flutter build:*)",
+      "Bash(open:*)"
     ]
   }
 }
