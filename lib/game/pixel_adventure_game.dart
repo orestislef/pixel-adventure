@@ -115,14 +115,13 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
     double gapEndX = 0;
 
     for (final item in levelData.layout) {
-      final x = (item['x'] as num) * tileSize;
-      final type = item['type'] as LevelItemType;
+      final x = item.x * tileSize;
 
       if (x < gapEndX) continue;
 
-      switch (type) {
+      switch (item.type) {
         case LevelItemType.platform:
-          final height = (item['height'] as num) * tileSize;
+          final height = item.height! * tileSize;
           final platY = groundY - height;
           world.add(Platform(position: Vector2(x, platY), size: Vector2(tileSize * 4, tileSize * 0.75)));
           world.add(Coin(position: Vector2(x + tileSize * 2, platY - tileSize * 0.5)));
@@ -131,18 +130,16 @@ class PixelAdventureGame extends FlameGame with HasCollisionDetection, HasKeyboa
           world.add(WalkingEnemy(position: Vector2(x, groundY)));
 
         case LevelItemType.gap:
-          final width = (item['width'] as num) * tileSize;
+          final width = item.width! * tileSize;
           gapEndX = x + width;
 
         case LevelItemType.coinRow:
-          final count = item['count'] as int;
-          for (int i = 0; i < count; i++) {
+          for (int i = 0; i < item.count!; i++) {
             world.add(Coin(position: Vector2(x + i * tileSize * 1.2, groundY - tileSize * 2)));
           }
 
         case LevelItemType.stair:
-          final steps = item['steps'] as int;
-          for (int i = 0; i < steps; i++) {
+          for (int i = 0; i < item.steps!; i++) {
             world.add(Platform(
               position: Vector2(x + i * tileSize * 1.5, groundY - (i + 1) * tileSize * 0.8),
               size: Vector2(tileSize * 2, tileSize * 0.8),
