@@ -267,9 +267,14 @@ class Player extends PositionComponent with CollisionCallbacks, HasGameReference
     final hatPaint = Paint()..color = const Color(0xFFFF5722);
     canvas.drawRect(Rect.fromLTWH(4, 0, 16, 5), hatPaint);
 
-    final eyePaint = Paint()..color = const Color(0xFF000000);
-    canvas.drawRect(const Rect.fromLTWH(7, 6, 2, 2), eyePaint);
-    canvas.drawRect(const Rect.fromLTWH(12, 6, 2, 2), eyePaint);
+    // Eye whites
+    final eyeWhitePaint = Paint()..color = const Color(0xFFFFFFFF);
+    canvas.drawRect(const Rect.fromLTWH(6, 5, 4, 4), eyeWhitePaint);
+    canvas.drawRect(const Rect.fromLTWH(14, 5, 4, 4), eyeWhitePaint);
+    // Pupils — drawn to the right; canvas flip handles left-facing
+    final pupilPaint = Paint()..color = const Color(0xFF000000);
+    canvas.drawRect(const Rect.fromLTWH(8, 6, 2, 2), pupilPaint);
+    canvas.drawRect(const Rect.fromLTWH(16, 6, 2, 2), pupilPaint);
 
     final legPaint = Paint()..color = const Color(0xFF1565C0);
     canvas.drawRect(const Rect.fromLTWH(4, 20, 6, 12), legPaint);
