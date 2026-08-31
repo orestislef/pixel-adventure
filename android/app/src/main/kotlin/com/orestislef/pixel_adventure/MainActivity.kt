@@ -1,4 +1,4 @@
-package com.lefkaditis.pixel_adventure
+package com.orestislef.pixel_adventure
 
 import io.flutter.embedding.android.FlutterActivity
 

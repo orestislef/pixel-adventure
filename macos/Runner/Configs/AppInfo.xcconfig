@@ -8,7 +8,7 @@
 PRODUCT_NAME = Super Platformer
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.lefkaditis.pixelAdventure
+PRODUCT_BUNDLE_IDENTIFIER = com.orestislef.pixelAdventure
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.lefkaditis. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.orestislef. All rights reserved.
